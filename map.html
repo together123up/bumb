@@ -1,0 +1,312 @@
+<!DOCTYPE html>  
+<html>  
+    <head>  
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />  
+        <link href="__PUBLIC__css/map.css" rel="stylesheet"/>  
+        <title>玩家定位</title>  
+        <script    type="text/javascript" src="http://api.map.baidu.com/api?ak=8eWv72WW0tYttrfBN1tGK6togxG5cgRr&v=2.0&services=false"></script>
+
+        <script type='text/javascript' src='__PUBLIC__js/jquery.min.js' charset='utf-8'></script>
+		
+    </head>  
+
+    <style type="text/css">
+        .BMap_pop .BMap_top{opacity: 0!important;width:0!important}
+        .BMap_pop .BMap_center{
+            opacity: 0!important;
+        }
+        .BMap_pop .BMap_bottom{
+            opacity: 0!important;
+        }
+        @media print{.BMap_noprint{display:none;}.BMap_noscreen{display:none!important;}.BMap_mask{background:none;}
+                     .BMap_pop .BMap_top img,.BMap_pop .BMap_center img,.BMap_pop .BMap_bottom img{display:none;}}
+        .BMap_shadow img{
+            opacity: 0!important;
+        }
+        .left{
+            display:none!important;
+        }
+		
+
+    </style>
+    <script>
+
+    </script>     
+
+    <body >
+
+        <div class="demo_main">  
+
+            <div style="min-height: 500px; width: 100%;" id="map">  
+            </div>  
+            <script type="text/javascript">
+                var markerArr = <?php echo $map?>;
+		
+				
+                var lan = <?php echo $row['longitude']?>;
+                var lat = <?php echo $row['latitude']?>;
+				 var map; //Map实例  
+                function map_init() {  
+                    map = new BMap.Map("map");  
+                    //第1步：设置地图中心点，以点击地图的玩家为中心 
+                    var point = new BMap.Point(lan, lat);  
+                    //第2步：初始化地图,设置中心点坐标和地图级别。  
+                    map.centerAndZoom(point, 18);  
+                   
+                    //第3步：向地图中添加缩放控件  
+                    var ctrlNav = new window.BMap.NavigationControl({  
+                        anchor: BMAP_ANCHOR_TOP_LEFT,  
+                        type: BMAP_NAVIGATION_CONTROL_LARGE  
+                    });  
+                    map.addControl(ctrlNav);  
+
+  
+                    //第5步：绘制点  添加标注  
+                    for (var i = 0; i < markerArr.length; i++) {  
+                        var p0 = markerArr[i].point.split(",")[0];  
+                        var p1 = markerArr[i].point.split(",")[1];  
+                        var maker = addMarker(new window.BMap.Point(p0, p1), i);  
+                        function myselfInfoWindows(center, length, color, border, size) { 
+                             this._center = center; 
+                             this._length = length; 
+                             this._color = color; 
+                             this._border = border; 
+                             this._size = size; 
+                        } 
+                         // 继承API的BMap.Overlay  
+                         myselfInfoWindows.prototype = new BMap.Overlay(); 
+                         // 实现初始化方法   
+                         myselfInfoWindows.prototype.initialize = function(map) { 
+                          
+                             this._map = map; 
+                             // 创建div元素，作为自定义覆盖物的容器  
+                            var div = document.createElement("div"); 
+                             div.style.position = "absolute"; 
+                           
+                             div.style.marginLeft = '-1px'; 
+                            div.style.marginTop = '-6px'; 
+                             div.style.width = this._length + "px"; 
+                             div.style.height = this._length + "px"; 
+                             div.style.background = this._color; 
+                             div.style.borderRadius = this._border; 
+                             div.style.backgroundSize = this._size;
+                           
+                             map.getPanes().markerPane.appendChild(div); 
+                            
+                             this._div = div; 
+                           
+                             return div; 
+                        }; 
+                        <!-- // 实现绘制方法    -->
+                         myselfInfoWindows.prototype.draw = function() { 
+                            <!-- // 根据地理坐标转换为像素坐标，并设置给容器     -->
+                             var position = this._map.pointToOverlayPixel(this._center); 
+                            this._div.style.left = position.x - this._length / 2 + "px"; 
+                            this._div.style.top = position.y - this._length / 2 + "px"; 
+                         }; 
+
+                         // 添加自定义覆盖物    -->
+                         var myself = new myselfInfoWindows(new window.BMap.Point(p0, p1), 28, "url(" + markerArr[i]['headUrl'] + ")", '50%', '100%'); 
+                         map.addOverlay(myself);
+                        addInfoWindow(maker, markerArr[i], i);    
+                    }  
+                }  
+  
+                // 添加标注  
+                function addMarker(point, index) {  
+                    var myIcon = new BMap.Icon("/paoPaoDaRen/public/static/home/img/h.png",  
+                        new BMap.Size(50, 60), {  
+                            
+                        });  
+                    var marker = new BMap.Marker(point, { icon: myIcon });  
+                    map.addOverlay(marker);  
+                    return marker;  
+                } 
+              
+       
+
+                ////////////////////////////////////////// 添加信息窗口 //////////////////////////////////// 
+
+                // 添加信息窗口  
+                function addInfoWindow(marker, poi) {
+
+                    var html =
+                            '<div class="mapbg">' +
+                            '<div class="top">' +
+                           // '<input id="close" name="close" type="button"  style=" width:45px; height:35px;  border:0; background:url(__PUBLIC__img/anniu_guangbi.png) no-repeat left top;background-size:100% 100%;" />' +
+                            ' </div>' +
+                            ' <div class="mid">' +
+                           
+                            '  <div class="mid-img">' +
+                            '  <img src="' + poi.headUrl + '"/>' +
+                            '  </div>' +
+                            '<div class="mid-img-pic">' +
+                            '<span>LV.' + poi.level + '</span>' +
+                            '</div>' +
+                            '  <div class="mid-img-text">' +
+                            '  <ul>' +
+                            '  <li class="nickname">' + poi.name + '</li>' +
+                            '  <li class="degnji"><label>玩家ID:</label><span>' + poi.roleId + '</span></li>' +
+                            '  <li class="address">{if condition="' + poi.roleId + ' eq 0"}<img src="__PUBLIC__img/dthyxx-tb02.png">{else}' +
+                            '<img src="__PUBLIC__img/dthyxx-tb01.png">{/if}' +
+                            '<div>' + poi.region + '</div></li>' +
+                            ' </ul>' +
+                           
+                            '  </div>' +
+                            ' </div>' +
+                            '  <div class="text"><i>' + poi.signature + '</i></div>' +
+                           
+                            
+                            ' <div class="over">' +
+                            '  <a class="over1 guanzu" onclick="guanzu(this);" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>关 &nbsp;注</div></a>' +
+                            ' <a class="over2 friend" onclick="friend(this)" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>好 &nbsp;友</div></a>' +
+                            '  <a class="over1" href="http://112.74.39.90/paoPaoDaRen/public/index.php/index/personalcenter/index?fromuid=' + poi.roleId + '&uid='+<?php echo $uid?>+'">访问空间</a>' +
+                            ' </div>' +
+                            '  </div>'+
+							'<div id="addTishi">恭喜您关注成功'+
+							'</div>';
+
+                    var infoWindow = new BMap.InfoWindow(html);
+
+                    var openInfoWinFun = function() {
+                        marker.openInfoWindow(infoWindow);
+                        change();
+                        closeImg();
+                    };
+
+                    marker.addEventListener("click", openInfoWinFun);
+
+                    return openInfoWinFun;
+
+                }
+				/*添加关注*/
+				var guanzu =function(dom){
+							var playerId=<?php echo $uid?>;
+							 var friendId=dom.getAttribute("data-friendId");
+							 var url="http://192.168.3.33:20179/gameserver";
+							
+							$.ajax({
+									url: url,
+									type:'get',
+									data: {
+									'playerId':playerId,
+									'friendId':friendId,
+									'type':2,
+									'sign':"baebe87dbee4aa7e24b2f9ed4b81c40d"
+									},
+									dataType: 'json',
+									
+									
+									success: function(result) {
+									 for(var i in result) {  
+											<!-- alert(i+":"+result[i]);-->
+											if(result[i].ret==0){
+											console.log("yes");
+											
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}else{
+											console.log("no");
+											 $("#addTishi").html("关注失败,请稍后再试");
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}
+										}
+									},
+									error: function(jqXHR, textStatus, errorThrown) {
+										console.log(textStatus + ' ' + errorThrown);
+									}
+									
+							});
+				}
+				/*添加好友*/
+				var friend =function(dom){
+							var playerId=<?php echo $uid?>;
+							 var friendId=dom.getAttribute("data-friendId");
+							 var url="http://192.168.3.33:20179/gameserver";
+							
+							$.ajax({
+									url: url,
+									type:'get',
+									data: {
+									'playerId':playerId,
+									'friendId':friendId,
+									'type':1,
+									'sign':"29daf9903b175984905bf6e760175ad8"
+									},
+									dataType: 'json',
+									
+									
+									success: function(result) {
+									 for(var i in result) {  
+											<!-- alert(i+":"+result[i]);-->
+											if(result[i].ret==0){
+											console.log("yes");
+											$("#addTishi").html("添加成功,等待玩家同意"); 
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}else{
+											console.log("no");
+											 $("#addTishi").html("添加失败,请稍后再试");
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}
+										}
+									},
+									error: function(jqXHR, textStatus, errorThrown) {
+										console.log(textStatus + ' ' + errorThrown);
+									}
+									
+							});
+				}
+				<!-- 覆盖原有的关闭按钮 -->
+                var closeImg = function() {
+                    var img = document.getElementsByTagName("img");
+						img[0]["src"] = "";
+                        img[3]["src"] = "__PUBLIC__img/anniu_guangbi.png";
+                        img[3].style = "position: absolute; top: 9px; width: 33px; height: 26px; cursor: pointer; z-index: 10000;margin-left:-39px";
+
+                };
+				
+              var change = function() {
+                     var topleft = document.getElementsByClassName("BMap_pop")[0]['firstElementChild'];
+                      topleft.innerHTML = "";
+					  var alltop = document.getElementsByTagName("div");
+                      
+                       alltop[14].innerHTML = "";
+                      
+                       alltop[16].innerHTML = "";
+						alltop[18].innerHTML = "";
+					
+					
+					alltop[20].style="box-sizing: content-box; width: 323px; height: 223px; position: absolute; left: 16px; top: -10px; z-index: 10; overflow: hidden;";
+												
+					alltop[15].style ="box-sizing: content-box;overflow: hidden;z-index: 100000;position: absolute;left: 0px;top: 25px;width: 353px;height: 0!important;";
+					alltop[17].style ="box-sizing: content-box;overflow: hidden;z-index: 1000000;position: absolute;left: 25px;top: -12px!important;width: 305px;height: 0px;";
+             
+						
+			   };
+
+                //异步调用百度js  
+                function map_load() {
+                    var load = document.createElement("script");
+                    load.src = "http://api.map.baidu.com/api?v=2.0&callback=map_init";
+                    document.body.appendChild(load);
+
+                }
+                window.onload = map_load;
+
+
+
+            </script> 
+
+
+
+         
+        </div>  
+
+  
+
+    </body>
+</html>
