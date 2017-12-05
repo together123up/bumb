@@ -6,7 +6,7 @@
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />  
         <link href="__PUBLIC__css/map.css" rel="stylesheet"/>  
         <title>玩家定位</title>  
-        <script    type="text/javascript" src="http://api.map.baidu.com/api?ak=8eWv72WW0tYttrfBN1tGK6togxG5cgRr&v=2.0&services=false"></script>
+        <script    type="text/javascript" src="http://api.map.baidu.com/api?ak=&v=2.0&services=false"></script>
 
         <script type='text/javascript' src='__PUBLIC__js/jquery-3.2.0.min.js' charset='utf-8'></script>
 		
@@ -160,7 +160,7 @@
 								l+=' <div class="over">' ;
 							   l+= '  <a class="over1 guanzu" onclick="guanzu(this);" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>关 &nbsp;注</div></a>' ;
 							  l+=  ' <a class="over2 friend" onclick="friend(this)" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>好 &nbsp;友</div></a>' ;
-							   l+= '  <a class="over1" href="http://112.74.39.90/paoPaoDaRen/public/index.php/index/personalcenter/index?fromuid=' + poi.roleId + '&uid='+<?php echo $uid?>+'">访问空间</a>' ;
+							   l+= '  <a class="over1" href="">访问空间</a>' ;
 								l+=' </div>' ;
 							   l+= '  </div>';
 								l+='<div id="addTishi">恭喜您关注成功';
@@ -189,35 +189,20 @@
 				var guanzu =function(dom){
 							var playerId=<?php echo $uid?>;
 							 var friendId=dom.getAttribute("data-friendId");
-							 var url="http://112.74.39.90:20179/gameserver";
+							 var url="";
 							
 							$.ajax({
 									url: url,
 									type:'get',
 									data: {
-									'playerId':playerId,
-									'friendId':friendId,
-									'type':2,
-									'sign':"baebe87dbee4aa7e24b2f9ed4b81c40d"
+									
 									},
 									dataType: 'json',
 									
 									
 									success: function(result) {
 									 
-											if(result.ret==0){
-											console.log("yes");
-											console.log(result);
-											 $("#addTishi").html("关注成功,等待玩家同意");
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}else{
-											console.log("no");
-											console.log("ret");
-											 $("#addTishi").html("关注失败,请稍后再试");
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}
+											<!--返回处理代码-->
 										
 									},
 									error: function(jqXHR, textStatus, errorThrown) {
@@ -230,35 +215,20 @@
 				var friend =function(dom){
 							var playerId=<?php echo $uid?>;
 							 var friendId=dom.getAttribute("data-friendId");
-							 var url="http://112.74.39.90:20179/gameserver";
+							 var url="";
 							
 							$.ajax({
 									url: url,
 									type:'get',
 									data: {
-									'playerId':playerId,
-									'friendId':friendId,
-									'type':1,
-									'sign':"29daf9903b175984905bf6e760175ad8"
+									
 									},
 									dataType: 'json',
 									
 									
 									success: function(result) {
 									
-											if(result.ret==0){
-											console.log("yes");
-											console.log(result);
-											$("#addTishi").html("添加成功,等待玩家同意"); 
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}else{
-											console.log("no");
-											console.log(result);
-											 $("#addTishi").html("添加失败,请稍后再试");
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}
+											<!--返回处理代码-->
 										
 									},
 									error: function(jqXHR, textStatus, errorThrown) {
