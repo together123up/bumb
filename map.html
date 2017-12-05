@@ -184,35 +184,21 @@
 				var guanzu =function(dom){
 							var playerId=<?php echo $uid?>;
 							 var friendId=dom.getAttribute("data-friendId");
-							 var url="http://192.168.3.33:20179/gameserver";
+							 var url=""
 							
 							$.ajax({
 									url: url,
 									type:'get',
 									data: {
-									'playerId':playerId,
-									'friendId':friendId,
-									'type':2,
-									'sign':"baebe87dbee4aa7e24b2f9ed4b81c40d"
+									
 									},
 									dataType: 'json',
 									
 									
 									success: function(result) {
-									 for(var i in result) {  
-											<!-- alert(i+":"+result[i]);-->
-											if(result[i].ret==0){
-											console.log("yes");
-											
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}else{
-											console.log("no");
-											 $("#addTishi").html("关注失败,请稍后再试");
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}
-										}
+									
+											<!--返回处理代码-->
+										
 									},
 									error: function(jqXHR, textStatus, errorThrown) {
 										console.log(textStatus + ' ' + errorThrown);
@@ -224,35 +210,19 @@
 				var friend =function(dom){
 							var playerId=<?php echo $uid?>;
 							 var friendId=dom.getAttribute("data-friendId");
-							 var url="http://192.168.3.33:20179/gameserver";
+							 var url="";
 							
 							$.ajax({
 									url: url,
 									type:'get',
 									data: {
-									'playerId':playerId,
-									'friendId':friendId,
-									'type':1,
-									'sign':"29daf9903b175984905bf6e760175ad8"
+									
 									},
 									dataType: 'json',
 									
 									
 									success: function(result) {
-									 for(var i in result) {  
-											<!-- alert(i+":"+result[i]);-->
-											if(result[i].ret==0){
-											console.log("yes");
-											$("#addTishi").html("添加成功,等待玩家同意"); 
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}else{
-											console.log("no");
-											 $("#addTishi").html("添加失败,请稍后再试");
-											 $("#addTishi").show();
-											$("#addTishi").fadeOut(3000);
-											}
-										}
+									<!--返回处理代码-->
 									},
 									error: function(jqXHR, textStatus, errorThrown) {
 										console.log(textStatus + ' ' + errorThrown);
