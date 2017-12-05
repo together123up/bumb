@@ -1,1 +1,295 @@
 点击一个标注，弹出的信息框固定在某一个地方显示。
+<!DOCTYPE html>  
+<html>  
+    <head>  
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />  
+        <link href="__PUBLIC__css/map.css" rel="stylesheet"/>  
+        <title>玩家定位</title>  
+        <script    type="text/javascript" src="http://api.map.baidu.com/api?ak=8eWv72WW0tYttrfBN1tGK6togxG5cgRr&v=2.0&services=false"></script>
+
+        <script type='text/javascript' src='__PUBLIC__js/jquery-3.2.0.min.js' charset='utf-8'></script>
+		
+    </head>  
+	<script type="text/javascript">  
+			function loada(){  
+				$("#loading").fadeOut("slow");  
+			}  
+	</script>  
+		
+   
+   
+
+     <body onload="loada()" >
+		<div  class="tankaung">
+		</div>
+
+        <div class="demo_main">  
+
+            <div style="min-height: 500px; width: 100%;" id="map">  
+            </div>  
+            <script type="text/javascript">
+                var markerArr = <?php echo $map?>;
+		
+				
+                var lan = <?php echo $row['longitude']?>;
+                var lat = <?php echo $row['latitude']?>;
+				 var map; 
+                function map_init() {  
+                    map = new BMap.Map("map");  
+                    
+                    var point = new BMap.Point(lan, lat);  
+                      
+                    map.centerAndZoom(point, 13);  
+                   
+                   
+                    var ctrlNav = new window.BMap.NavigationControl({  
+                        anchor: BMAP_ANCHOR_TOP_LEFT,  
+                        type: BMAP_NAVIGATION_CONTROL_LARGE  
+                    });  
+                    map.addControl(ctrlNav);  
+
+			
+                     
+                    for (var i = 0; i < markerArr.length; i++) {  
+						
+                        var p0 = markerArr[i].point.split(",")[0];  
+                        var p1 = markerArr[i].point.split(",")[1];  
+                        var maker = addMarker(new window.BMap.Point(p0, p1), i);  
+                        function myselfInfoWindows(center, length, color, border, size) { 
+                             this._center = center; 
+                             this._length = length; 
+                             this._color = color; 
+                             this._border = border; 
+                             this._size = size; 
+                        } 
+                         // 继承API的BMap.Overlay  
+                         myselfInfoWindows.prototype = new BMap.Overlay(); 
+                        
+                         myselfInfoWindows.prototype.initialize = function(map) { 
+                          
+                             this._map = map; 
+                             
+                            var div = document.createElement("div"); 
+                             div.style.position = "absolute"; 
+                           
+                             div.style.marginLeft = '-1px'; 
+                            div.style.marginTop = '-6px'; 
+                             div.style.width = this._length + "px"; 
+                             div.style.height = this._length + "px"; 
+                             div.style.background = this._color; 
+                             div.style.borderRadius = this._border; 
+                             div.style.backgroundSize = this._size;
+                             div.style.zIndex= '20000001';
+                           
+                             map.getPanes().markerPane.appendChild(div); 
+                            
+                             this._div = div; 
+                           
+                             return div; 
+                        }; 
+                        <!-- // 实现绘制方法    -->
+                         myselfInfoWindows.prototype.draw = function() { 
+                            
+                             var position = this._map.pointToOverlayPixel(this._center); 
+                            this._div.style.left = position.x - this._length / 2 + "px"; 
+                            this._div.style.top = position.y - this._length / 2 + "px"; 
+                         }; 
+
+                         // 添加自定义覆盖物    -->
+                         var myself = new myselfInfoWindows(new window.BMap.Point(p0, p1), 28, "url(" + markerArr[i]['headUrl'] + ")", '50%', '100%'); 
+                         map.addOverlay(myself);
+						  
+                    }  
+					
+					//監聽加載完成事件
+					map.addEventListener("tilesloaded",function(){
+						$("#loading").hide();
+						
+					});
+                }  
+  
+                // 添加标注  
+                function addMarker(point, index) {  
+                    var myIcon = new BMap.Icon("/paoPaoDaRen/public/static/home/img/h.png",  
+                        new BMap.Size(50, 60), {  
+                            
+                        });  
+						
+                    var marker = new BMap.Marker(point, { icon: myIcon }); 
+					marker.setTop(true);
+					//传入参数---重点
+					marker.roleId=	index	;	
+					
+                    map.addOverlay(marker);  
+					// 添加监听事件且传入参数
+					marker.addEventListener("click",function(){
+						var roleid=marker.roleId;
+						var poi = markerArr[roleid];
+						getHtml(poi);
+						
+						function getHtml(poi){
+								var l ='';
+							   l+= '<div class="mapbg">' ;
+								l+='<div class="top">' 
+							   // '<input id="close" name="close" type="button"  style=" width:45px; height:35px;  border:0; background:url(__PUBLIC__img/anniu_guangbi.png) no-repeat left top;background-size:100% 100%;" />' +
+								l+=' <img src="__PUBLIC__img/anniu_guangbi.png" onclick="closeTk(this)" id="close">';
+							   l+= ' </div>' ;
+							   l+= ' <div class="mid">' ;
+							   
+							   l+= '  <div class="mid-img">' ;
+							   l+= '  <img src="' + poi.headUrl + '"/>' ;
+							   l+= '  </div>' ;
+							   l+= '<div class="mid-img-pic">' ;
+							   l+= '<span>LV.' + poi.level + '</span>' ;
+							   l+= '</div>' ;
+							   l+= '  <div class="mid-img-text">' ;
+							   l+= '  <ul>' ;
+							   l+= '  <li class="nickname">' + poi.name + '</li>';
+							  l+=  '  <li class="degnji"><label>玩家ID:</label><span>' + poi.roleId + '</span></li>' ;
+							   l+= '  <li class="address">{if condition="' + poi.roleId + ' eq 0"}<img src="__PUBLIC__img/dthyxx-tb02.png">{else}' ;
+							   l+= '<img src="__PUBLIC__img/dthyxx-tb01.png">{/if}' ;
+							   l+= '<div>' + poi.region + '</div></li>';
+							   l+= ' </ul>' ;
+							   
+							   l+= '  </div>' ;
+							  l+=  ' </div>' ;
+							   l+= '  <div class="text"><i>' + poi.signature + '</i></div>' ;
+							   
+								
+								l+=' <div class="over">' ;
+							   l+= '  <a class="over1 guanzu" onclick="guanzu(this);" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>关 &nbsp;注</div></a>' ;
+							  l+=  ' <a class="over2 friend" onclick="friend(this)" data-friendId="'+poi.roleId+'" href="javascript:void(0)"><span>+&nbsp;</span><div>好 &nbsp;友</div></a>' ;
+							   l+= '  <a class="over1" href="http://112.74.39.90/paoPaoDaRen/public/index.php/index/personalcenter/index?fromuid=' + poi.roleId + '&uid='+<?php echo $uid?>+'">访问空间</a>' ;
+								l+=' </div>' ;
+							   l+= '  </div>';
+								l+='<div id="addTishi">恭喜您关注成功';
+								l+='</div>';
+								$(".tankaung").html(l);
+								$(".tankaung").css({zIndex:322});
+								$(".mapbg").css({zIndex:422});
+						}
+					
+							
+							
+				
+					
+							
+					});
+                    return marker;  
+                } 
+              
+				/*关闭按钮*/
+				var closeTk=function(){
+					$(".mapbg").css({zIndex:-1});
+				}
+               
+				
+				/*添加关注*/
+				var guanzu =function(dom){
+							var playerId=<?php echo $uid?>;
+							 var friendId=dom.getAttribute("data-friendId");
+							 var url="http://112.74.39.90:20179/gameserver";
+							
+							$.ajax({
+									url: url,
+									type:'get',
+									data: {
+									'playerId':playerId,
+									'friendId':friendId,
+									'type':2,
+									'sign':"baebe87dbee4aa7e24b2f9ed4b81c40d"
+									},
+									dataType: 'json',
+									
+									
+									success: function(result) {
+									 
+											if(result.ret==0){
+											console.log("yes");
+											console.log(result);
+											 $("#addTishi").html("关注成功,等待玩家同意");
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}else{
+											console.log("no");
+											console.log("ret");
+											 $("#addTishi").html("关注失败,请稍后再试");
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}
+										
+									},
+									error: function(jqXHR, textStatus, errorThrown) {
+										console.log(textStatus + ' ' + errorThrown);
+									}
+									
+							});
+				}
+				/*添加好友*/
+				var friend =function(dom){
+							var playerId=<?php echo $uid?>;
+							 var friendId=dom.getAttribute("data-friendId");
+							 var url="http://112.74.39.90:20179/gameserver";
+							
+							$.ajax({
+									url: url,
+									type:'get',
+									data: {
+									'playerId':playerId,
+									'friendId':friendId,
+									'type':1,
+									'sign':"29daf9903b175984905bf6e760175ad8"
+									},
+									dataType: 'json',
+									
+									
+									success: function(result) {
+									
+											if(result.ret==0){
+											console.log("yes");
+											console.log(result);
+											$("#addTishi").html("添加成功,等待玩家同意"); 
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}else{
+											console.log("no");
+											console.log(result);
+											 $("#addTishi").html("添加失败,请稍后再试");
+											 $("#addTishi").show();
+											$("#addTishi").fadeOut(3000);
+											}
+										
+									},
+									error: function(jqXHR, textStatus, errorThrown) {
+										console.log(textStatus + ' ' + errorThrown);
+									}
+									
+							});
+				}
+				
+
+                //异步调用百度js  
+                function map_load() {
+                    var load = document.createElement("script");
+                    load.src = "http://api.map.baidu.com/api?v=2.0&callback=map_init";
+                    document.body.appendChild(load);
+
+                }
+                window.onload = map_load;
+
+
+
+            </script> 
+
+
+
+         
+        </div> 
+	
+
+  <div id="loading" class="loader" > 
+	 </div> 
+
+    </body>
+</html>
